@@ -98,26 +98,26 @@ def rule_segment(text: str, protect: bool, get_syllabus):
         if tag: 
             chunks.append(Chunk((i,i), t, tag)); i += 1; continue
         m = scan_longest_at(tokens, i, PIPELINE)
-        
         if m:
             chunks.append(m); i = m.span[1] + 1
         else:
             chunks.append(Chunk((i,i), t, "RAW")); i += 1
-
+    
     # 3) structural merges
     
     chunks = clean_wordnum_tag(chunks)
     
     chunks = merge_num_classifier(chunks)
-
+   
     chunks = merge_predicate(chunks)
-    
 
     # 4) clean punct after merging
-
+    
     chunks = clean_sfp_chunks(chunks)
+    
     chunks = clean_cls_tag(chunks)
 
     chunks = clean_postp_tag(chunks)
     chunks = clean_chunks(chunks)
+
     return chunks

@@ -1,5 +1,5 @@
 from .types import Chunk
-from .config import FUN_TAG, SPECIAL_ADJ, PUNCT_WT_ENDING
+from .config import FUN_TAG, SPECIAL_ADJ, PUNCT_WT_ENDING, SPECIAL_POSTP_SFP
 from typing import List, Tuple
 
 Span = Tuple[int, int]
@@ -50,7 +50,7 @@ def collapse_to_phrase_chunks(chunks: List[List["Chunk"]]):
                     flush_buf()
                 continue
 
-            if tag in FUN_TAG:
+            if tag in FUN_TAG or txt in SPECIAL_POSTP_SFP:
                 if txt in SPECIAL_ADJ:
                     # include in current phrase, then flush immediately
                     if buf_start is None: buf_start = s0
@@ -78,46 +78,3 @@ def collapse_to_phrase_chunks(chunks: List[List["Chunk"]]):
 
     return out, tokens
 
-
-
-
-# def collapse_to_phrases(chunks):
-#     sentences = []
-#     def flush():
-#         if buf:
-#             surface.append("".join(buf))
-#             buf.clear()
-
-#     for sent in chunks: 
-#         surface: List[str] = []
-#         buf: List[str] = []
-
-#         for ch in sent:
-#             tag = getattr(ch, "tag", None)
-#             txt = getattr(ch, "text", "") 
-            
-#             if tag == "PUNCT":
-#                 # skip punctuation except ။ (to mark the end of sentence)
-#                 if surface and txt == "။": surface.append(txt)
-#                 flush()
-#                 continue
-
-#             if tag in FUN_TAG:
-#                 if txt in SPECIAL_ADJ: 
-#                     buf.append(txt)
-#                     flush()
-#                 else:
-#                     flush()
-#                     surface.append(txt)
-#                 continue
-            
-#             buf.append(txt) 
-
-        
-#         # push remaining one
-#         flush()
-#         PUNCT_WT_ENDING = {" ", "", ",", "?", "!"}
-#         all_tokens = [t for t in surface if t not in PUNCT_WT_ENDING]
-    
-#         sentences.append(all_tokens)
-#     return sentences

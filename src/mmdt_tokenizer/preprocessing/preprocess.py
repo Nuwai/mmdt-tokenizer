@@ -27,6 +27,7 @@ def preprocess_burmese_text(text: str) -> Tuple[List[str], Dict[str, str]]:
     text = re.sub(r'[\u200B\u200C\u200D\uFEFF]', '', text) #remove ghost characters
     text = re.sub(r'\s+', ' ', text) #shrink space
     text = unicodedata.normalize('NFC', text).strip() #normalize unicode
+    
     # Step 2: Collapse digit/date/time spacing
     text = collapse_digit_spaces(text)
    

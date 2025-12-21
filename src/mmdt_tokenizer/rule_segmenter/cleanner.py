@@ -1,7 +1,7 @@
 from typing import List
 from .types import Chunk
-from .config import DAY_CL, MTH_CL, PNUM_CL, NOUN_CL, REGION_CL
-from .config import PERCENT_WORD, COMMON_KEYS_PRE
+from .config import DAY_CL, MTH_CL, PNUM_CL, NOUN_CL, REGION_CL, REGION_ONE_WORD, SPECIAL_POSTP
+from .config import PERCENT_WORD, COMMON_KEYS_PRE, NEG_SENT_SFP, ISOLATED_SFP_TO_POSTP
 import re
 
 
@@ -62,20 +62,19 @@ def clean_wordnum_tag(chunks: List["Chunk"]) -> List["Chunk"]:
 def clean_cls_tag(chunks: List["Chunk"]) -> List["Chunk"]:
     out: List["Chunk"] = []
  
-
     for i, cur in enumerate(chunks):
         # default: keep original tag
         final_tag = cur.tag
 
-        if cur.tag in ("CL", "VEP") or cur.text in PNUM_CL:
+        if cur.tag in ("CL", "VEP") or cur.text in (PNUM_CL, REGION_CL, NOUN_CL):
             prev_tag = chunks[i - 1].tag if i > 0 else None
             next_tag = chunks[i + 1].tag if i+1<len(chunks) else None
 
-            if prev_tag == "DAY" and cur.text in DAY_CL:
+            if prev_tag in("DAY", "DATE") and cur.text in DAY_CL:
                 final_tag = "DAYCL"
-            if prev_tag == "MONTH" and cur.text == MTH_CL:
+            if prev_tag == "MONTH" and cur.text in MTH_CL:
                 final_tag = "MONTHCL"
-            if prev_tag == "REGION" and cur.text in REGION_CL:
+            if (prev_tag == "REGION" and cur.text in REGION_ONE_WORD) or cur.text in REGION_CL:
                 final_tag = "REGIONCL"
             if cur.text in NOUN_CL:
                 final_tag = "NOUNCL"
@@ -99,10 +98,10 @@ def clean_postp_tag(chunks: List["Chunk"]) -> List["Chunk"]:
     out: List["Chunk"] = []
     n = len(chunks)
     i = 0
-    special_postp = ("ကို", "က", "မှာ", "ရော", "အား")
+    
     while i <n:
         ch = chunks[i]
-        if  ch.text in special_postp:
+        if  ch.text in SPECIAL_POSTP:
             prev_tag = chunks[i - 1].tag if i-1 > 0 else None
             prev_text = chunks[i -1].text if i-1 > 0 else ""
             prev_prev_tag = chunks[i - 2].tag if i-2 > 0 else None
@@ -126,8 +125,7 @@ def clean_sfp_chunks(chunks: List["Chunk"]) -> List["Chunk"]:
     """
     Rule 1: PRED + NEG_SET_SFP (NOW TAGGED AS CONJ)
     """
-    NEG_SENT_SFP = ("နဲ့", "နှင့်", "နှင့်")   
-    ISOLATED_SFP_TO_POSTP = {'ပြီ', '၏', 'စေ', 'သည်'}
+    
     out = []
     i = 0
     n = len(chunks)
@@ -153,9 +151,6 @@ def clean_sfp_chunks(chunks: List["Chunk"]) -> List["Chunk"]:
                 next_tag not in ("PRED", "SFP"):
                 cur = Chunk(cur.span, cur.text, "POSTP")
 
-        if cur.tag == "VEP":
-            if next_tag not in ("SFP", "PRED"):
-                cur = Chunk(cur.span, cur.text, "RAW")
 
         out.append(cur)
         i += 1
