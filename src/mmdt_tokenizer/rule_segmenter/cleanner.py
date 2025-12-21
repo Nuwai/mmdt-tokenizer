@@ -1,6 +1,7 @@
 from typing import List
 from .types import Chunk
-from .lexicon import SKIP
+from .config import DAY_CL, MTH_CL, PNUM_CL, NOUN_CL, REGION_CL
+from .config import PERCENT_WORD, COMMON_KEYS_PRE
 import re
 
 
@@ -10,9 +11,8 @@ def clean_wordnum_tag(chunks: List["Chunk"]) -> List["Chunk"]:
     1) Normalize percent word 'ရာခိုင်နှုန်း' (1–3 tokens) -> one INUMCL chunk.
     2) Demote isolated WORDNUM -> RAW.
     """
-    PERCENT_WORD = "ရာခိုင်နှုန်း"
+
     MAX_TOKENS = 5
-    COMMON_KEYS_PRE = {'ဦး', "ရက်"}
     out: List["Chunk"] = []
     i = 0
     n = len(chunks)
@@ -61,32 +61,25 @@ def clean_wordnum_tag(chunks: List["Chunk"]) -> List["Chunk"]:
 
 def clean_cls_tag(chunks: List["Chunk"]) -> List["Chunk"]:
     out: List["Chunk"] = []
-    day_cl = ("နေ့", "ရက်")
-    mth_cl =  "လ"
-    pnum_cl = ("အကြိမ်", "အနှစ်", "အသက်", "အချက်")
-    region_cl = ("ခရိုင်", "မြို့နယ်", "မြို့", "တိုင်းဒေသကြီး", 
-                 "ပြည်နယ်", "နိုင်ငံ", "တောင်", "ကျေးရွာ", "ရွာ",
-                 "ရပ်ကွက်", "မြို့ပြ", "မြို့တော်", "မြို့နယ်ခွဲ",
-                 "မြို့တော်ကြီး", "ဒေသ", "မြောက်ပိုင်း", "တောင်ပိုင်း",
-                 "အရှေ့ပိုင်း", "အနောက်ပိုင်း", "အလယ်ပိုင်း",
-                 "မြစ်", "ကမ်းခြေ", "ချောင်း", "တူးမြောင်း")
+ 
 
     for i, cur in enumerate(chunks):
         # default: keep original tag
         final_tag = cur.tag
 
-        if cur.tag in ("CL", "VEP") or cur.text in pnum_cl:
+        if cur.tag in ("CL", "VEP") or cur.text in PNUM_CL:
             prev_tag = chunks[i - 1].tag if i > 0 else None
             next_tag = chunks[i + 1].tag if i+1<len(chunks) else None
 
-            if prev_tag == "DAY" and cur.text in day_cl:
+            if prev_tag == "DAY" and cur.text in DAY_CL:
                 final_tag = "DAYCL"
-            if prev_tag == "MONTH" and cur.text == mth_cl:
+            if prev_tag == "MONTH" and cur.text == MTH_CL:
                 final_tag = "MONTHCL"
-            if prev_tag == "REGION" and cur.text in region_cl:
+            if prev_tag == "REGION" and cur.text in REGION_CL:
                 final_tag = "REGIONCL"
-
-            if next_tag in ("NUM", "WORDNUM") and cur.text in pnum_cl:
+            if cur.text in NOUN_CL:
+                final_tag = "NOUNCL"
+            if next_tag in ("NUM", "WORDNUM") and cur.text in PNUM_CL:
                 final_tag = "INUMCL"
 
         out.append(Chunk(cur.span, cur.text, final_tag))

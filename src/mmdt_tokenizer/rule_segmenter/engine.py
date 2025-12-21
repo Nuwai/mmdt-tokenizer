@@ -1,9 +1,9 @@
 from typing import List
 from .types import Chunk
-from .lexicon import SKIP
-from .lexicon import CONJ, MCONJ, POSTP, SFP, CL, VEP, CLEP, QW
-from .lexicon import MONTH, DAY, PRN, REGION, SWORD, TITLE, REG
-from .scanner import build_trie, scan_longest_at
+from .config import SKIP
+from .lexicon import build_all_independent_trees
+
+from .scanner import scan_longest_at
 from .merge_ops import merge_num_classifier, merge_predicate
 from .cleanner import clean_cls_tag, clean_sfp_chunks, clean_wordnum_tag, clean_postp_tag,clean_chunks
 from ..preprocessing import preprocess_burmese_text
@@ -12,23 +12,24 @@ from ..utils.patterns import TAG_PATTERNS
 
 import pandas as pd
 
+LEXICON_TREES = build_all_independent_trees()
 
-TRIE_CONJ  = build_trie(CONJ)
-TRIE_MCONJ  = build_trie(MCONJ)
-TRIE_SFP   = build_trie(SFP)
-TRIE_QW   = build_trie(QW)
-TRIE_VEP   = build_trie(VEP)
-TRIE_POST  = build_trie(POSTP)
-TRIE_UNIT  = build_trie(CL)
-TRIE_CLEP   = build_trie(CLEP)
+TRIE_MCONJ  = LEXICON_TREES.get("MCONJ")
+TRIE_CONJ  = LEXICON_TREES.get("CONJ")
+TRIE_SFP   = LEXICON_TREES.get("SFP")
+TRIE_QW   = LEXICON_TREES.get("QW")
+TRIE_VEP   = LEXICON_TREES.get("VEP")
+TRIE_POST  = LEXICON_TREES.get("POSTP")
+TRIE_UNIT  = LEXICON_TREES.get("CL")
 
-TRIE_MONTH = build_trie(MONTH)
-TRIE_DAY = build_trie(DAY)
-TRIE_REGION   = build_trie(REGION)
-TRIE_REG   = build_trie(REG)
-TRIE_SWORD  = build_trie(SWORD)
-TRIE_TITLE   = build_trie(TITLE)
-TRIE_PRN   = build_trie(PRN)
+TRIE_CLEP   = LEXICON_TREES.get("CLEP")  
+TRIE_MONTH = LEXICON_TREES.get("MONTH")
+TRIE_DAY = LEXICON_TREES.get("DAY")
+TRIE_REGION   = LEXICON_TREES.get("REGION")
+TRIE_REG   = LEXICON_TREES.get("REG")
+TRIE_SWORD  = LEXICON_TREES.get("SWORD")
+TRIE_TITLE   = LEXICON_TREES.get("TITLE")
+TRIE_PRN   = LEXICON_TREES.get("PRN") 
 
 
 
@@ -42,8 +43,8 @@ PIPELINE = [
     (TRIE_TITLE,  "TITLE"),
     (TRIE_PRN,  "PRN"),
 
-    (TRIE_CONJ,  "CONJ"),
     (TRIE_MCONJ,  "MCONJ"),
+    (TRIE_CONJ,  "CONJ"),
     (TRIE_VEP,   "VEP"),
     (TRIE_SFP,   "SFP"),
     (TRIE_QW,   "QW"),
@@ -93,7 +94,7 @@ def rule_segment(text: str, protect: bool, get_syllabus):
             chunks.append(Chunk((i,i), t, "PUNCT")); i += 1; continue
         
         tag = _check_pre_defined_tag(t)
-
+        
         if tag: 
             chunks.append(Chunk((i,i), t, tag)); i += 1; continue
         m = scan_longest_at(tokens, i, PIPELINE)
@@ -110,7 +111,7 @@ def rule_segment(text: str, protect: bool, get_syllabus):
     chunks = merge_num_classifier(chunks)
 
     chunks = merge_predicate(chunks)
-
+    
 
     # 4) clean punct after merging
 
@@ -119,5 +120,4 @@ def rule_segment(text: str, protect: bool, get_syllabus):
 
     chunks = clean_postp_tag(chunks)
     chunks = clean_chunks(chunks)
-    
     return chunks

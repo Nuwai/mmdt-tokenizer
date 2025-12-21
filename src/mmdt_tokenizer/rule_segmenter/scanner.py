@@ -1,5 +1,5 @@
 from typing import Dict, Tuple, List, Optional
-from .lexicon import SKIP
+from .config import SKIP
 from .types import Chunk
 
 

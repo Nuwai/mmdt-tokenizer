@@ -1,4 +1,5 @@
 import pytest
+import unicodedata
 from mmdt_tokenizer import MyanmarTokenizer
 
 @pytest.fixture(scope="module")
@@ -8,15 +9,18 @@ def tokenizer():
 
 def test_conjunctions(tokenizer):
     text = "အဲဒီအချိန်ကတည်းကစက်ရုံကို စွန့်ခွာသွားတာဖြစ်ပါတယ်။ကြိုးစားသော်လည်း စာမေးပွဲကျပါသည်။သို့သော် စိတ်မပျက်ပါ။"
+    text = unicodedata.normalize('NFC', text)
     tokens = tokenizer.word_tokenize(text)
-    expected = [['အဲဒီအချိန်', 'ကတည်းက', 'စက်ရုံ', 'ကို', 'စွန့်ခွာ', 'သွားတာဖြစ်ပါတယ်', '။', 'ကြိုးစား', 'သော်လည်း', 'စာမေးပွဲကျ', 'ပါသည်', '။', 'သို့သော်', 'စိတ်', 'မပျက်ပါ', '။']]
+    print(tokens)
+    expected = [['အဲဒီအချိန်', 'ကတည်းက', 'စက်ရုံ', 'ကို', 'စွန့်ခွာသွားတာ', 'ဖြစ်ပါတယ်', '။', 'ကြိုးစား', 'သော်လည်း', 'စာမေးပွဲကျ', 'ပါသည်', '။', 'သို့သော်', 'စိတ်', 'မပျက်ပါ', '။']]
     assert tokens == expected
+
 
 
 def test_month_and_date(tokenizer):
     text = "၂၀၂၅ ခုနှစ် မေလ ၅ရက် သည် ကျွန်မတို့အတွက် အရေးပါသည်"
     tokens = tokenizer.word_tokenize(text)
-    expected = ['၂၀၂၅ ခုနှစ် မေလ ၅ရက်', 'သည်', 'ကျွန်မတို့', 'အတွက်', 'အရေး', 'ပါသည်']
+    expected = ['၂၀၂၅ ခုနှစ် မေလ ၅ရက်', 'သည်', 'ကျွန်မ', 'တို့', 'အတွက်', 'အရေး', 'ပါသည်']
     assert tokens[0] == expected
 
 

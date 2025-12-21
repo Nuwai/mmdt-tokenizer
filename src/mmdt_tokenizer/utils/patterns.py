@@ -79,8 +79,9 @@ PROTECT_PATTERNS =[
     EMAIL_PATTERN, # email address
     URL_PATTERN, # URL
     PER_NAME_PATTERN, #social media mention
-    ABB_ENG_PATTERN, # English abbreviation
+    
     TITLE_PATTERN, # titles
+    ABB_ENG_PATTERN, # English abbreviation
     ABB_BUR_PATTERN_1,ABB_BUR_PATTERN_2, # Burmese abbrev (တ.က.က)
     DATE_PATTERN_01, DATE_PATTERN_02, #Date 
     TIME_PATTERN,  # Time

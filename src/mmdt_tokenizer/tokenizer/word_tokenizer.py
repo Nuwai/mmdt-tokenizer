@@ -6,7 +6,7 @@ from ..utils.csv_utils import save_tokens_to_csv, save_tags_to_csv
 
 from .syllable_tokenizer import MyanmarSyllableTokenizer
 from ..rule_segmenter.engine import rule_segment
-from ..rule_segmenter.collapse import collapse_to_phrases
+from ..rule_segmenter.collapse import collapse_to_phrase_chunks
 
 
 def get_syllabus_from_tokenizer(tokenizer: MyanmarSyllableTokenizer):
@@ -41,13 +41,14 @@ class MyanmarWordTokenizer:
         series = standardize_text_input(texts, column)
         token_tag_pairs = series.apply(self._tokenize_one).tolist()
         
-        all_tokens = collapse_to_phrases(token_tag_pairs)
+        ner_tokens, all_tokens = collapse_to_phrase_chunks(token_tag_pairs)
         
         if save_csv:
             save_tokens_to_csv(all_tokens, save_csv, conll_style)
 
         if save_tag:
-            save_tags_to_csv(token_tag_pairs, save_tag)
+            save_tags_to_csv(token_tag_pairs, save_tag.replace(".csv","_raw.csv"))
+            save_tags_to_csv(ner_tokens, save_tag.replace(".csv","_collapsed.csv"))
     
 
         return all_tokens if return_list else [separator.join(toks) for toks in all_tokens]

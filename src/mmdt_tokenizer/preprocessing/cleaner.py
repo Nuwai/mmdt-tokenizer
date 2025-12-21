@@ -1,5 +1,5 @@
 import re
-from ..utils.patterns import PROTECTED_SPLIT_PATTERN, MYANMAR_DIGIT
+from ..utils.patterns import PROTECTED_SPLIT_PATTERN
 
 def remove_punct_outside_protected(text: str) -> str:
     return ''.join(

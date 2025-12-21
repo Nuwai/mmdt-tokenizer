@@ -1,6 +1,6 @@
 import re
 from typing import Tuple, Dict, List
-
+import unicodedata 
 from .normalizer import split_punct, collapse_digit_spaces
 from .cleaner import remove_punct_outside_protected
 from .protector import protect_patterns
@@ -26,7 +26,7 @@ def preprocess_burmese_text(text: str) -> Tuple[List[str], Dict[str, str]]:
     text = re.sub(r"[~^*_+=<>\[\]{}|\\…“”‘’「」『』\"'#()]+|\.\.+", " ", text) #remove special characters
     text = re.sub(r'[\u200B\u200C\u200D\uFEFF]', '', text) #remove ghost characters
     text = re.sub(r'\s+', ' ', text) #shrink space
-    
+    text = unicodedata.normalize('NFC', text).strip() #normalize unicode
     # Step 2: Collapse digit/date/time spacing
     text = collapse_digit_spaces(text)
    
